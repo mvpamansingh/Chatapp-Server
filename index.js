@@ -1,12 +1,52 @@
 const express = require("express"); 
- 
+ const mongoose = require("mongoose");
+
 const {Server} = require("socket.io")
 const {createServer} = require("http")
 const port = 3000;
 
-
-
 const app = express();
+
+app.use(express.json());
+
+const mongoUri = 'mongodb://localhost:27017/ChatAppWithNodeJs';
+
+
+
+mongoose.connect(mongoUri,{useNewUrlParser:true, useUnifiedTopology:true})
+.then(()=>console.log('Monogodb Connected'))
+.catch(err=>console.log(err));
+
+//User Schema
+const userSchema = new mongoose.Schema({
+    username:{type:String, required:true}
+})
+
+const User= mongoose.model('User',userSchema);
+
+// Routes
+app.post('/addUser', async(req,res)=>{
+
+    const { username } =req.body;
+    
+    if(!username)
+    {
+        return res.status(400).send('Username is required')
+    }
+    try{
+        const newUser= new User({username});
+        await newUser.save();
+        res.status(201).json({username});
+    }
+    catch(err)
+    {
+        //
+        res.status(500).json({error: 'Internal Server Error'});
+    }
+
+})
+
+
 const server = createServer(app);
 const io = new Server(server,{
     cors:{
@@ -30,6 +70,37 @@ server.listen(port, '0.0.0.0',() => {
 app.get("/", (req, res) => {
     res.send("Hello World");
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
