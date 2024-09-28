@@ -45,7 +45,17 @@ app.post('/addUser', async(req,res)=>{
     }
 
 })
+app.get('/getusers', async(req, res)=>{
 
+    try{
+        const users= await User.find();
+        res.status(200).json(users);
+    }
+    catch(err)
+    {
+        res.status(500).json({error: 'Cannot retrieve users error'})
+    }
+})
 
 const server = createServer(app);
 const io = new Server(server,{
