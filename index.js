@@ -26,7 +26,8 @@ const userSchema = new mongoose.Schema({
 const User= mongoose.model('User',userSchema);
 
 const messageSchema = new mongoose.Schema({
-    sender: {type:mongoose.Schema.ObjectId, ref: 'User', required:true},
+    senderId: {type:mongoose.Schema.ObjectId, ref: 'User', required:true},
+    receiverId: {type:mongoose.Schema.ObjectId, ref: 'User', required:true},
     message: {type:String, required: true},
     timeStamp:{type: Date, default:Date.now}
 })
@@ -68,6 +69,83 @@ app.post('/addUser', async(req,res)=>{
     }
 
 })
+
+app.post('/send-messsage', async(req,res)=>{
+
+    const {senderId, receiverId, message} = req.body
+
+    if(!senderId|| !receiverId || !message)
+    {
+        return res.status(400).send('Sender Id, recever id a message is required');
+    }
+
+    try{
+        const sender = await User.findById(senderId);
+        const receiver = await User.findById(receiverId);
+
+        if(!sender || !receiver)
+        {
+            return res.status(404).send('Sender recever not found');
+        }
+
+        const chatRoomId = createChatRoomId(senderId,receiverId);
+
+        let chatRoom = await ChatRoom.findOne({chatRoomId});
+
+        // creating the instance of chatroom for  p2p user if it doesnot exist
+        if(!chatRoom)
+        {
+            chatRoom = new ChatRoom(
+                {
+                    chatRoomId,
+                    users: [senderId,receiverId],
+                    messages :[]
+                }
+            );
+            await chatRoom.save();
+        }
+ 
+        const newMessage = new Message({
+            senderId:senderId,
+            receiverId:receiverId,
+            message
+        });
+
+        const savedMessage = await newMessage.save();
+        // adding messages to chatroom of p2p user
+
+
+        chatRoom.messages.push(savedMessage._id)
+        await chatRoom.save();
+
+        res.status(201).json(savedMessage);
+
+    }catch(err)
+    {
+        console.log(err);
+        res.status(500).json({error: "Internal seve error "})
+    }
+})
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 app.get('/getusers', async(req, res)=>{
 
     try{
