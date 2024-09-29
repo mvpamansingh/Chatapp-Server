@@ -2,7 +2,8 @@ const express = require("express");
  const mongoose = require("mongoose");
 
 const {Server} = require("socket.io")
-const {createServer} = require("http")
+const {createServer} = require("http");
+const { timeStamp } = require("console");
 const port = 3000;
 
 const app = express();
@@ -23,6 +24,28 @@ const userSchema = new mongoose.Schema({
 })
 
 const User= mongoose.model('User',userSchema);
+
+const messageSchema = new mongoose.Schema({
+    sender: {type:mongoose.Schema.ObjectId, ref: 'User', required:true},
+    message: {type:String, required: true},
+    timeStamp:{type: Date, default:Date.now}
+})
+
+const Message =  mongoose.model('Message',messageSchema);
+
+const chatRoomSchema =  new mongoose.Schema({
+    chatRoomId : {type: String, required: true, unique:true},
+    users: [{type:mongoose.Schema.Types.ObjectId, ref:'User'}],
+    messages :[{type:mongoose.Schema.Types.ObjectId, ref: 'Message'}]
+});
+
+const ChatRoom =mongoose.model('ChatRoom', chatRoomSchema);
+
+
+const createChatRoomId  = (id1,id2)=>{
+    return [id1,id2].sort().join('_');
+};
+
 
 // Routes
 app.post('/addUser', async(req,res)=>{
