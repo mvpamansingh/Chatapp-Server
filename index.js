@@ -127,20 +127,27 @@ app.post('/send-messsage', async(req,res)=>{
     }
 })
 
+app.get("/messages/:chatRoomId", async(req,res)=>{
+
+    const {chatRoomId} = req.params;
 
 
+    try{
+        const chatRoom = await ChatRoom.findOne({chatRoomId}).populate('messages')
 
+        if(!chatRoom)
+        {
+            return res.status(404).json({error:"Chat room not found"});
+        }
 
-
-
-
-
-
-
-
-
-
-
+         res.json(chatRoom.messages);
+    }
+    catch(err)
+    {
+        console.log(err)
+        res.status(500).json({error:"Internal server Error "})
+    }
+});
 
 
 
