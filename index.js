@@ -118,6 +118,7 @@ app.post('/send-messsage', async(req,res)=>{
         chatRoom.messages.push(savedMessage._id)
         await chatRoom.save();
 
+        io.emit('newMessage', savedMessage);
         res.status(201).json(savedMessage);
 
     }catch(err)
@@ -178,6 +179,10 @@ const io = new Server(server,{
 io.on("connection", (socket) => {
     console.log("A user connected");
     console.log("User connected with id: " + socket.id);
+
+    socket.on('disconnect', ()=>{
+        console.log(`user disconnected ${socket.id}`)
+    })
 });
 
 server.listen(port, '0.0.0.0',() => {
