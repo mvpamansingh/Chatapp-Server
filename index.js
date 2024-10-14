@@ -10,7 +10,7 @@ const app = express();
 
 app.use(express.json());
 
-const mongoUri = 'mongodb://localhost:27017/ChatAppWithNodeJs';
+const mongoUri = 'mongodb://localhost:27017/ChatAppWithNodeJsV1';
 
 
 
@@ -199,12 +199,36 @@ app.get("/", (req, res) => {
 
 
 
+// Group chat Schema
+
+const groupChatSchema = new mongoose.Schema({
+    name: { type: String, required: true },
+
+  });
+  
+  const GroupChat = mongoose.model('GroupChat', groupChatSchema);
+  
+  // Conversation Schema
+  const conversationSchema = new mongoose.Schema({
+    message: { type: String, required: true },
+    senderId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    timestamp: { type: Date, default: Date.now },
+    groupChatId: { type: mongoose.Schema.Types.ObjectId, ref: 'GroupChat', required: true } 
+  });
+  
+  const Conversation = mongoose.model('Conversation', conversationSchema);
+  
+  // Group Chat Room Messages Schema
+  const groupChatRoomMessagesSchema = new mongoose.Schema({
+    groupChatId: { type: mongoose.Schema.Types.ObjectId, ref: 'GroupChat', required: true },
+    messages: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Conversation' }]
+  });
+  
+  const GroupChatMessages = mongoose.model('GroupChatMessages', groupChatRoomMessagesSchema);
 
 
 
-
-
-
+// Group chat Apis
 
 
 
