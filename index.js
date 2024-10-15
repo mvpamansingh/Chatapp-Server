@@ -285,8 +285,8 @@ app.get('/get-groups', async (req, res) => {
   });
 
 
-app.post('/fetch-group-messages', async (req, res) => {
-  const { groupId } = req.body;
+app.get('/fetch-group-messages/:groupId', async (req, res) => {
+  const { groupId } = req.params;
 
   if (!groupId) {
     return res.status(400).json({ error: 'Group ID is required' });
@@ -309,6 +309,7 @@ app.post('/fetch-group-messages', async (req, res) => {
     const formattedMessages = groupChatMessages.messages.map(msg => ({
       message: msg.message,
       senderName: msg.senderId.username,
+      senderId:msg.senderId._id,
       timestamp: msg.timestamp
     }));
 
