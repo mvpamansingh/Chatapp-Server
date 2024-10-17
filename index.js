@@ -183,6 +183,17 @@ io.on("connection", (socket) => {
     socket.on('disconnect', ()=>{
         console.log(`user disconnected ${socket.id}`)
     })
+
+
+    socket.on('joinGroup', (groupId) => {
+      socket.join(groupId);
+      console.log(`User ${socket.id} joined group ${groupId}`);
+  });
+
+  socket.on('leaveGroup', (groupId) => {
+      socket.leave(groupId);
+      console.log(`User ${socket.id} left group ${groupId}`);
+  });
 });
 
 server.listen(port, '0.0.0.0',() => {
@@ -332,6 +343,12 @@ app.post('/save-group-message', async (req, res) => {
   
     try {
       // Create and save the new conversation (message)
+
+      const sender = await User.findById(senderId);
+      if (!sender) {
+        return res.status(404).json({ error: 'Sender not found' });
+      }
+
       const newConversation = new Conversation({
         message,
         senderId,
@@ -355,6 +372,18 @@ app.post('/save-group-message', async (req, res) => {
     //     groupId: groupChatId,
     //     message: savedConversation
     //   });
+
+    // this is for sending message to a specific group
+
+    const formattedMessage = {
+      
+      message: savedConversation.message,
+      senderId: savedConversation.senderId,
+      senderName: sender.username,
+      timestamp: savedConversation.timestamp
+    };
+
+    io.to(groupChatId).emit('newGroupMessage', formattedMessage);
   
       res.status(201).json({
         message: 'Group message saved successfully',
